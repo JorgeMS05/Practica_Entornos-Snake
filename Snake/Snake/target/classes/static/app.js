@@ -12,7 +12,25 @@ Console.log = (function(message) {
 	console.scrollTop = console.scrollHeight;
 });
 
-let game;
+
+//Inserción de nombre Æ
+var nombre;
+var color;
+
+getRandomColor();
+
+function getRandomColor() {
+	nombre = prompt("Inserta tu nombre","Nombre");
+	var letters = '0123456789ABCDEF';
+	color = '#';
+	for (var i = 0; i < 6; i++) {
+		color += letters[Math.floor(Math.random() * 16)];
+	}
+	console.log(color);
+	return color;
+}
+
+
 
 class Snake {
 
@@ -83,6 +101,7 @@ class Game {
 		this.connect();
 	}
 
+
 	setDirection(direction) {
 		this.direction = direction;
 		this.socket.send(direction);
@@ -138,7 +157,7 @@ class Game {
 		if (this.nextFrame != null) {
 			this.nextFrame();
 		}
-	}
+}
 
 	connect() {
 		
@@ -149,13 +168,19 @@ class Game {
 			// Socket open.. start the game loop.
 			Console.log('Info: WebSocket connection opened.');
 			Console.log('Info: Press an arrow key to begin.');
-			Console.log('Info: Ahi te pudras.');
 
 			this.startGameLoop();
 			
 			setInterval(() => this.socket.send('ping'), 5000);
 		}
 
+		/*//Cuando hacemos click en el submit del chat, se llama a la función anónima
+		document.getElementById("clickMe").onclick = function () { 
+			var myText = document.getElementById("myTextArea").value;			//Guardamos el valor de dicha variable.
+			alert(myText);
+			this.socket.send(myText);
+		}
+*/
 		this.socket.onclose = () => {
 			Console.log('Info: WebSocket closed.');
 			this.stopGameLoop();
@@ -186,10 +211,38 @@ class Game {
 			case 'kill':
 				Console.log('Info: Head shot!');
 				break;
+			case 'chat':
+				 var auxColor;
+				 if (packet.name == nombre){
+					 auxColor = color;
+				 }else{
+					 auxColor = packet.color;
+					 alert("Voy a pintar de color: " + auxColor);
+				 }
+				 var msg = packet.name + " : " + packet.mensaje;
+				 Console.log(msg.fontcolor(auxColor));
 			}
 		}
+		
 	}
+
 }
+
+$(document).ready(function(){
+    $('#clickMe').click(function() {
+		alert("Color colorcito abajo: " + color);
+        var object = {
+            type: "chat",
+			name : nombre,
+			color: color,
+            message : document.getElementById("myTextArea").value
+		}
+		alert(JSON.stringify(object));
+
+        game.socket.send(JSON.stringify(object));
+        $('#myTextArea').val('');
+    });
+})
 
 game = new Game();
 

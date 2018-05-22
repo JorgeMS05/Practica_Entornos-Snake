@@ -26,6 +26,21 @@
 	margin: 0;
 }
 
+div{
+  display:inline-block;
+  position:relative;
+}
+
+button{
+  position:absolute;
+  bottom:10px;
+  right:10px;
+}
+
+textarea{
+  display:block;
+}
+
 form, p, span {
     margin:0;
     padding:0; }
