@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Multiplayer Snake</title>
+<link rel="stylesheet" href="style.css"></link>
+</head>
+<body>
+	<div style="float: left">
+		<canvas id="playground" width="640" height="480"></canvas>
+	</div>
+	<div id="console-container">
+		<div id="console"></div>
+	</div>
+	
+	<div id="wrapper">
+	  <div id="menu">
+	        <p class="welcome">Welcome, <b></b></p>
+	        <p class="logout"><a id="exit" href="#">Exit Chat</a></p>
+	        <div style="clear:both"></div>
+	    </div>
+	     
+	    <div id="chatbox"></div>
+	     
+	    <form name="message" action="">
+	        <input name="usermsg" type="text" id="usermsg" size="63" />
+	        <input name="submitmsg" type="submit"  id="submitmsg" value="Send" />
+	    </form>
+	</div>
+	
+	<script src="app.js"></script>
+</body>
+</html>
