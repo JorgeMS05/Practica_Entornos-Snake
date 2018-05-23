@@ -1,11 +1,17 @@
 package es.codeurjc.em.snake;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.swing.Timer;
+
 
 public class SnakeGame {
 
@@ -13,11 +19,14 @@ public class SnakeGame {
 
 	private ConcurrentHashMap<Integer, Snake> snakes = new ConcurrentHashMap<>();
 	private AtomicInteger numSnakes = new AtomicInteger();
+	private List<Comida> comidas = new ArrayList<Comida>();
+	private long elapseTime = 0;
+	private long currentTime = System.currentTimeMillis();
 
 	private ScheduledExecutorService scheduler;
 
 	public void addSnake(Snake snake) {
-
+		
 		snakes.put(snake.getId(), snake);
 
 		int count = numSnakes.getAndIncrement();
@@ -43,20 +52,53 @@ public class SnakeGame {
 	}
 
 	private void tick() {
-
+		Timer timer;
 		try {
-
+			
+			elapseTime = System.currentTimeMillis();
+			System.out.println(elapseTime - currentTime);
+			
 			for (Snake snake : getSnakes()) {
-				snake.update(getSnakes());
+				snake.update(getSnakes(), comidas);
 			}
 
+			if(comidas.size() == 0) {
+				Comida c = new Comida();
+                comidas.add(c);
+			}
+			
+			if (elapseTime - currentTime > 10000) {
+				currentTime = System.currentTimeMillis();
+                elapseTime = 0;
+                if (comidas.size() < 20) {
+                    Comida c = new Comida();
+                    comidas.add(c);
+                }
+            }
+			
 			StringBuilder sb = new StringBuilder();
 			for (Snake snake : getSnakes()) {
 				sb.append(getLocationsJson(snake));
 				sb.append(',');
 			}
+			
+			StringBuilder c = new StringBuilder();
+			for (Comida comida : comidas) {
+				c.append(String.format("{\"x\": %d, \"y\": %d}", comida.getComidaLoc().x, comida.getComidaLoc().y));
+                c.append(",");
+			}
 			sb.deleteCharAt(sb.length()-1);
-			String msg = String.format("{\"type\": \"update\", \"data\" : [%s]}", sb.toString());
+			c.deleteCharAt(c.length()-1);
+			
+			StringBuilder punt = new StringBuilder();
+			for (Snake snake : getSnakes()) {
+				punt.append(String.format("{\"puntuacion\": %d}", snake.getLength()));
+				punt.append(',');
+			}
+			punt.deleteCharAt(punt.length()-1);
+			
+			String msg = String.format("{\"type\": \"update\", \"data\" : [%s] , \"comidas\" : [%s], \"puntuaciones\" : [%s]}", sb.toString(), c.toString(), punt.toString());
+			
 
 			broadcast(msg);
 

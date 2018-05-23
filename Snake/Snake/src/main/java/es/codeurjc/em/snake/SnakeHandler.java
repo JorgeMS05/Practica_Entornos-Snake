@@ -47,7 +47,7 @@ public class SnakeHandler extends TextWebSocketHandler {
 		snakeGame.addSnake(s);
 
 		StringBuilder sb = new StringBuilder();
-		for (Snake snake : snakeGame.getSnakes()) {			
+		for (Snake snake : snakeGame.getSnakes()) {
 			sb.append(String.format("{\"id\": %d, \"color\": \"%s\"}", snake.getId(), snake.getHexColor()));
 			sb.append(',');
 		}
@@ -58,7 +58,7 @@ public class SnakeHandler extends TextWebSocketHandler {
 	}
 	
     private void chatHandler(WebSocketSession session, TextMessage message) throws Exception{
-        
+    	
         try{
             
             JsonNode mens = mapper.readTree(message.getPayload());
@@ -78,7 +78,6 @@ public class SnakeHandler extends TextWebSocketHandler {
             System.out.println("Error: " + e.getMessage());
     
         }
-        
     }
 	
 

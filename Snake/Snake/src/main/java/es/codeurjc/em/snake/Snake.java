@@ -3,11 +3,12 @@ package es.codeurjc.em.snake;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Deque;
+import java.util.Iterator;
 
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
-public class Snake {
+public class Snake extends SnakeGame{
 
 	private static final int DEFAULT_LENGTH = 5;
 
@@ -16,6 +17,16 @@ public class Snake {
 	private Location head;
 	private final Deque<Location> tail = new ArrayDeque<>();
 	private int length = DEFAULT_LENGTH;
+	
+	public int getLength() {
+		return length;
+	}
+
+	public void setLength(int length) {
+		this.length = length;
+	}
+
+	private SnakeGame snakeGame = new SnakeGame();
 
 	private final String hexColor;
 	private Direction direction;
@@ -50,7 +61,7 @@ public class Snake {
 		this.session.sendMessage(new TextMessage(msg));
 	}
 
-	public synchronized void update(Collection<Snake> snakes) throws Exception {
+	public synchronized void update(Collection<Snake> snakes, Collection<Comida> comidas) throws Exception {
 
 		Location nextLocation = this.head.getAdjacentLocation(this.direction);
 
@@ -76,6 +87,7 @@ public class Snake {
 		}
 
 		handleCollisions(snakes);
+		handleComida(comidas);
 	}
 
 	private void handleCollisions(Collection<Snake> snakes) throws Exception {
@@ -91,6 +103,17 @@ public class Snake {
 				if (this.id != snake.id) {
 					snake.reward();
 				}
+			}
+		}
+	}
+	
+	private void handleComida(Collection<Comida> c) {
+		Iterator<Comida> iterador = c.iterator();
+		while(iterador.hasNext()) {
+			Comida com = iterador.next();
+			if(this.head.equals(com.comidaLoc)) {
+					iterador.remove();
+					this.length++;
 			}
 		}
 	}

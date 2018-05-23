@@ -12,6 +12,7 @@ Console.log = (function(message) {
 	console.scrollTop = console.scrollHeight;
 });
 
+var auxPunt = [];
 
 //Inserción de nombre Æ
 var nombre;
@@ -30,8 +31,6 @@ function getRandomColor() {
 	return color;
 }
 
-
-
 class Snake {
 
 	constructor() {
@@ -45,6 +44,20 @@ class Snake {
 			context.fillRect(pos.x, pos.y,
 				game.gridSize, game.gridSize);
 		}
+	}
+}
+
+class Comida {
+	
+	constructor(x,y) {
+		this.color = "#66FF66";
+		this.x = x;
+		this.y = y;
+	}
+	
+	draw(context) {
+		context.fillStyle = this.color;
+		context.fillRect(this.x, this.y, game.gridSize, game.gridSize);
 	}
 }
 
@@ -66,6 +79,8 @@ class Game {
 	initialize() {	
 	
 		this.snakes = [];
+		this.comidas = [];
+		this.puntuaciones = [];
 		let canvas = document.getElementById('playground');
 		if (!canvas.getContext) {
 			Console.log('Error: 2d canvas not supported by this browser.');
@@ -126,8 +141,14 @@ class Game {
 
 	draw() {
 		this.context.clearRect(0, 0, 640, 480);
+		
 		for (var id in this.snakes) {			
 			this.snakes[id].draw(this.context);
+		}
+		
+		// Pintamos las comidas
+		for (var c in this.comidas){
+			this.comidas[c].draw(this.context);
 		}
 	}
 
@@ -174,13 +195,6 @@ class Game {
 			setInterval(() => this.socket.send('ping'), 5000);
 		}
 
-		/*//Cuando hacemos click en el submit del chat, se llama a la función anónima
-		document.getElementById("clickMe").onclick = function () { 
-			var myText = document.getElementById("myTextArea").value;			//Guardamos el valor de dicha variable.
-			alert(myText);
-			this.socket.send(myText);
-		}
-*/
 		this.socket.onclose = () => {
 			Console.log('Info: WebSocket closed.');
 			this.stopGameLoop();
@@ -194,6 +208,21 @@ class Game {
 			case 'update':
 				for (var i = 0; i < packet.data.length; i++) {
 					this.updateSnake(packet.data[i].id, packet.data[i].body);
+				}
+				this.comidas = new Array();
+				for(var i = 0; i < packet.comidas.length; i++) {
+					console.log(packet.comidas[i].x + " "+ packet.comidas[i].y);
+					this.comidas[i] = new Comida(packet.comidas[i].x, packet.comidas[i].y);
+				}
+				this.puntuaciones = new Array();
+				for(var i = 0; i < packet.puntuaciones.length; i++) {
+					var msg = "Jugador " + (i+1) + " :" + JSON.stringify(packet.puntuaciones[i].puntuacion);
+					console.log("AuxPunt " + auxPunt + ", Msg: " + msg);
+					if(auxPunt[i] == undefined || auxPunt[i]!=parseInt(JSON.stringify(packet.puntuaciones[i].puntuacion))){
+						auxPunt[i] = parseInt(JSON.stringify(packet.puntuaciones[i].puntuacion));
+						console.log("AuxPunt2 " + auxPunt + ", Msg2: " + msg);
+						document.getElementById("leaderboardFin").innerHTML += "<td>" + msg + "</td>";
+					}
 				}
 				break;
 			case 'join':
@@ -221,6 +250,15 @@ class Game {
 				 }
 				 var msg = packet.name + " : " + packet.mensaje;
 				 Console.log(msg.fontcolor(auxColor));
+				 break;
+			case 'leaderboard':
+				 alert("Mierdaputa");
+				 var msg = packet.puntuacion;
+				 alert(msg);
+				 document.getElementById("leaderboard").innerHTML = msg;
+				 break;
+			 default:
+				 alert("cagoendios");
 			}
 		}
 		
