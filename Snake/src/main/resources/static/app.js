@@ -19,18 +19,6 @@ var nombresPuntuacion = [];
 var nombre;
 var color;
 
-getRandomColor();
-
-function getRandomColor() {
-	nombre = prompt("Inserta tu nombre","Nombre");
-	var letters = '0123456789ABCDEF';
-	color = '#';
-	for (var i = 0; i < 6; i++) {
-		color += letters[Math.floor(Math.random() * 16)];
-	}
-	return color;
-}
-
 class Snake {
 
 	constructor() {
@@ -253,15 +241,16 @@ class Game {
 				
 				break;
 			case 'join':
+				var color = packet.color_actual;
 				for (var j = 0; j < packet.data.length; j++) {
 					this.addSnake(packet.data[j].id, packet.data[j].color);
 				}
-				 if (packet.name == nombre){
+				 /*if (packet.name == nombre){
 					 auxColor = color;
 				 }else{
-					 auxColor = packet.color;
+					 auxColor = color;
 					 alert("Voy a pintar de color: " + auxColor);
-				 }
+				 }*/
 				break;
 			case 'leave':
 				this.removeSnake(packet.id);

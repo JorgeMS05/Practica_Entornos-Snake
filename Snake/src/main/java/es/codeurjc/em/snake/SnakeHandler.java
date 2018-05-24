@@ -51,12 +51,21 @@ public class SnakeHandler extends TextWebSocketHandler {
 		snakeGame.addSnake(s);
 
 		StringBuilder sb = new StringBuilder();
-		for (Snake snake : snakeGame.getSnakes()) {
-			sb.append(String.format("{\"id\": %d, \"color\": \"%s\"}", snake.getId(), snake.getHexColor()));
-			sb.append(',');
-		}
-		sb.deleteCharAt(sb.length()-1);
-		String msg = String.format("{\"type\": \"join\",\"data\":[%s]}", sb.toString());
+		
+		String colorcillo = new String();
+
+		  int i = 0;
+		  for (Snake snake : snakeGame.getSnakes()) {
+			   sb.append(String.format("{\"id\": %d, \"color\": \"%s\"}", snake.getId(), snake.getHexColor()));
+			   sb.append(',');
+			   if (i == id){
+				   colorcillo = snake.getHexColor();
+			   }
+			   i++;
+		  }
+
+		  sb.deleteCharAt(sb.length()-1);
+		  String msg = String.format("{\"type\": \"join\",\"data\":[%s], \"color_actual\": \"%s\"}", sb.toString(), colorcillo);
 		
 		snakeGame.broadcast(msg);
 	}
@@ -70,7 +79,6 @@ public class SnakeHandler extends TextWebSocketHandler {
             difusion.put("name",mens.get("name").asText());
             difusion.put("mensaje",mens.get("message").asText());
             difusion.put("type","chat");
-            difusion.put("color", mens.get("color").asText());
             
             for(Entry<WebSocketSession, Snake> s : sesiones.entrySet()){
 
