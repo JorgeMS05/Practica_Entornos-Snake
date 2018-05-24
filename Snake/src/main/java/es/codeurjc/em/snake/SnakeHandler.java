@@ -1,6 +1,7 @@
 package es.codeurjc.em.snake;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.web.socket.CloseStatus;
@@ -31,6 +32,9 @@ public class SnakeHandler extends TextWebSocketHandler {
 	private SnakeGame snakeGame = new SnakeGame();
 	
 	private ConcurrentHashMap<WebSocketSession, Snake> sesiones = new ConcurrentHashMap<>();
+	
+	static CopyOnWriteArrayList<String> nombres = new CopyOnWriteArrayList();
+	
 	public ObjectMapper mapper = new ObjectMapper();
 
 	@Override
@@ -96,6 +100,37 @@ public class SnakeHandler extends TextWebSocketHandler {
                 chatHandler(session,message);
             
              }
+			if(payload.contains("nombre")) {
+				try{
+					JsonNode mens = mapper.readTree(message.getPayload());
+					
+					if(!nombres.contains(mens.get("name").asText())) {
+						nombres.add(mens.get("name").asText());
+					}
+					/*
+					StringBuilder sb = new StringBuilder();
+					for (String nombresito : nombres) {
+						sb.append(String.format("{\"nombre\": \"%s\"}", nombresito));
+						sb.append(',');
+					}
+					sb.deleteCharAt(sb.length()-1);
+					String msg = String.format("{\"type\": \"nombres\",\"data\":[%s]}", sb.toString());
+					
+					System.out.println("Tamos bien" + nombres);
+					
+					//snakeGame.broadcast(msg);
+					
+					for(Entry<WebSocketSession, Snake> s : sesiones.entrySet()){
+
+	                    s.getKey().sendMessage(new TextMessage(msg));
+	            
+					}*/
+		        }catch(IOException e){
+		    
+		            System.out.println("Error: " + e.getMessage());
+		    
+		        }
+			}
 
 			Snake s = (Snake) session.getAttributes().get(SNAKE_ATT);
 
@@ -106,6 +141,14 @@ public class SnakeHandler extends TextWebSocketHandler {
 			System.err.println("Exception processing message " + message.getPayload());
 			e.printStackTrace(System.err);
 		}
+	}
+
+	public static CopyOnWriteArrayList<String> getNombres() {
+		return nombres;
+	}
+
+	public static void setNombres(CopyOnWriteArrayList<String> nombres) {
+		SnakeHandler.nombres = nombres;
 	}
 
 	@Override

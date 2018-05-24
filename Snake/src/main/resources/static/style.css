@@ -84,38 +84,12 @@ a {
   
 .error { color: #ff0000; }
 
-#leaderboard {
-	text-align:left;
-    margin:0 auto;
-    margin-left: 25px;
-    margin-bottom:25px;
-    padding:10px;
-    background:#fff;
-    height:270px;
-    width:430px;
-    border:1px solid #ACD8F0;
+#leaderboardFin {
+	float: left;
+	margin-left: 25px;
+	width: 300px;
+    border:1px solid #999999;
     overflow:auto; 
-}
-
-.row {
-	position: relative;
-	display: block;
-	width: 100%;
-	height: 20px;
-	border-bottom: 1px solid #AFAFAF;
-}
-
-.name {
-	position: relative;
-	display: inline-block;
-	width: 75%;
-	line-height: 45px;
-}
-
-.score {
-	position: relative;
-	display: inline-block;
-	width: 25%;
 }
   
 #menu { padding:12.5px 25px 12.5px 25px; }

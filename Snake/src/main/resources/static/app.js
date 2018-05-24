@@ -13,6 +13,7 @@ Console.log = (function(message) {
 });
 
 var auxPunt = [];
+var nombresPuntuacion = [];
 
 //Inserción de nombre Æ
 var nombre;
@@ -27,7 +28,6 @@ function getRandomColor() {
 	for (var i = 0; i < 6; i++) {
 		color += letters[Math.floor(Math.random() * 16)];
 	}
-	console.log(color);
 	return color;
 }
 
@@ -81,6 +81,7 @@ class Game {
 		this.snakes = [];
 		this.comidas = [];
 		this.puntuaciones = [];
+		this.nombresUpdate = [];
 		let canvas = document.getElementById('playground');
 		if (!canvas.getContext) {
 			Console.log('Error: 2d canvas not supported by this browser.');
@@ -193,6 +194,21 @@ class Game {
 			this.startGameLoop();
 			
 			setInterval(() => this.socket.send('ping'), 5000);
+			
+			var enviarNombre= {
+		            type: "nombre",
+					name : nombre
+			}
+			alert(JSON.stringify(enviarNombre));
+
+	        game.socket.send(JSON.stringify(enviarNombre));
+	        
+	        var colorMessage= {
+	        		type: "colorMessage",
+	        		color: color
+	        }
+	        
+	        game.socket.send(JSON.stringify(colorMessage));
 		}
 
 		this.socket.onclose = () => {
@@ -201,7 +217,7 @@ class Game {
 		}
 
 		this.socket.onmessage = (message) => {
-
+			var auxColor;
 			var packet = JSON.parse(message.data);
 			
 			switch (packet.type) {
@@ -211,24 +227,41 @@ class Game {
 				}
 				this.comidas = new Array();
 				for(var i = 0; i < packet.comidas.length; i++) {
-					console.log(packet.comidas[i].x + " "+ packet.comidas[i].y);
 					this.comidas[i] = new Comida(packet.comidas[i].x, packet.comidas[i].y);
 				}
-				this.puntuaciones = new Array();
-				for(var i = 0; i < packet.puntuaciones.length; i++) {
-					var msg = "Jugador " + (i+1) + " :" + JSON.stringify(packet.puntuaciones[i].puntuacion);
-					console.log("AuxPunt " + auxPunt + ", Msg: " + msg);
-					if(auxPunt[i] == undefined || auxPunt[i]!=parseInt(JSON.stringify(packet.puntuaciones[i].puntuacion))){
-						auxPunt[i] = parseInt(JSON.stringify(packet.puntuaciones[i].puntuacion));
-						console.log("AuxPunt2 " + auxPunt + ", Msg2: " + msg);
-						document.getElementById("leaderboardFin").innerHTML += "<td>" + msg + "</td>";
-					}
+				this.nombresUpdate = new Array();
+				for(var i = 0; i < packet.nombres.length; i++) {
+					this.nombresUpdate.push(packet.nombres[i].nombre);
+					console.log("El tamaño de mi polla es: " + this.nombresUpdate.length);
 				}
+				if(this.nombresUpdate !== undefined || this.nombresUpdate.length != 0){
+				this.puntuaciones = new Array();
+				for(var i = 0; i < packet.nombres.length; i++) {
+					var msg = this.nombresUpdate[i] + " :" + JSON.stringify(packet.puntuaciones[i].puntuacion);
+					if(auxPunt[i] == undefined || auxPunt[i]!=parseInt(JSON.stringify(packet.puntuaciones[i].puntuacion))){
+						if(auxPunt[i]!=parseInt(JSON.stringify(packet.puntuaciones[i].puntuacion)) && auxPunt[i]!=undefined){
+							document.getElementById("leaderboardFin").deleteRow(i);
+						}
+						auxPunt[i] = parseInt(JSON.stringify(packet.puntuaciones[i].puntuacion));
+						var aux = "<tr id=\"" + i + "\">" + msg + "</tr>";
+						var table = document.getElementById("leaderboardFin")/*.innerHTML += "<tr id=\"" + i + "\">" + msg + "</tr>"*/;
+						var row = table.insertRow(i);
+						var cell = row.insertCell(0);
+						cell.innerHTML = msg;
+					}
+				}}
+				
 				break;
 			case 'join':
 				for (var j = 0; j < packet.data.length; j++) {
 					this.addSnake(packet.data[j].id, packet.data[j].color);
 				}
+				 if (packet.name == nombre){
+					 auxColor = color;
+				 }else{
+					 auxColor = packet.color;
+					 alert("Voy a pintar de color: " + auxColor);
+				 }
 				break;
 			case 'leave':
 				this.removeSnake(packet.id);
@@ -241,29 +274,30 @@ class Game {
 				Console.log('Info: Head shot!');
 				break;
 			case 'chat':
-				 var auxColor;
+				 /*var auxColor;
 				 if (packet.name == nombre){
 					 auxColor = color;
 				 }else{
 					 auxColor = packet.color;
 					 alert("Voy a pintar de color: " + auxColor);
-				 }
+				 }*/
 				 var msg = packet.name + " : " + packet.mensaje;
 				 Console.log(msg.fontcolor(auxColor));
 				 break;
-			case 'leaderboard':
-				 alert("Mierdaputa");
-				 var msg = packet.puntuacion;
-				 alert(msg);
-				 document.getElementById("leaderboard").innerHTML = msg;
-				 break;
-			 default:
-				 alert("cagoendios");
+			case 'nombres':
+				
+				//console.log("Entro en nombre " + JSON.stringify(packet.data[0].nombre));
+				nombresPuntuacion=[];
+				for(var i = 0; i < packet.data.length; i++) {
+					nombresPuntuacion.push(JSON.stringify(packet.data[i].nombre));
+				}
+				console.log(nombresPuntuacion);
+				/*for(var i = 0; i < packet.nombre.length; i++) {
+					nombresPuntuacion.push(nombre[i].nombrePunt);
+				}*/
 			}
 		}
-		
 	}
-
 }
 
 $(document).ready(function(){

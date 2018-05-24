@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -22,6 +23,8 @@ public class SnakeGame {
 	private List<Comida> comidas = new ArrayList<Comida>();
 	private long elapseTime = 0;
 	private long currentTime = System.currentTimeMillis();
+	
+	static CopyOnWriteArrayList<String> nombresTemp = new CopyOnWriteArrayList();
 
 	private ScheduledExecutorService scheduler;
 
@@ -57,6 +60,9 @@ public class SnakeGame {
 			
 			elapseTime = System.currentTimeMillis();
 			System.out.println(elapseTime - currentTime);
+			
+			nombresTemp = SnakeHandler.getNombres();
+			
 			
 			for (Snake snake : getSnakes()) {
 				snake.update(getSnakes(), comidas);
@@ -97,8 +103,15 @@ public class SnakeGame {
 			}
 			punt.deleteCharAt(punt.length()-1);
 			
-			String msg = String.format("{\"type\": \"update\", \"data\" : [%s] , \"comidas\" : [%s], \"puntuaciones\" : [%s]}", sb.toString(), c.toString(), punt.toString());
+			StringBuilder nomb = new StringBuilder();
+			for (int i=0; i<nombresTemp.size(); i++) {
+				nomb.append(String.format("{\"nombre\": %s}", "\"" + nombresTemp.get(i) + "\""));
+				nomb.append(',');
+			}
+			nomb.deleteCharAt(nomb.length()-1);
 			
+			String msg = String.format("{\"type\": \"update\", \"data\" : [%s] , \"comidas\" : [%s], \"puntuaciones\" : [%s], \"nombres\" : [%s]}", sb.toString(), c.toString(), punt.toString(), nomb.toString());
+			System.out.println(msg);
 
 			broadcast(msg);
 
